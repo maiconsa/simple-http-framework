@@ -1,0 +1,11 @@
+package simplehttp.framework.http.annotations.request;
+
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Controller {
+	String path();
+}
