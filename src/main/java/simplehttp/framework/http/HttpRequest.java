@@ -37,8 +37,6 @@ public class HttpRequest extends DataInputStream {
 	private void init() throws IOException {
 		requestLine();
 		header();
-		
-		System.out.println(headers);
 		message();
 	}
 	
@@ -51,6 +49,7 @@ public class HttpRequest extends DataInputStream {
 			method = HttpMethod.valueOf(split[0]);
 			path = split[1];
 			version  = split[2]; 
+			
 	}
 	
 	private void header() throws IOException {

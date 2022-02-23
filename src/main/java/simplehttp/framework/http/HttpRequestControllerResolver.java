@@ -1,7 +1,5 @@
 package simplehttp.framework.http;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -12,23 +10,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.google.gson.GsonBuilder;
-
 import simplehttp.framework.http.annotations.request.Controller;
-import simplehttp.framework.http.annotations.request.PathVariable;
-import simplehttp.framework.http.annotations.request.Payload;
+import simplehttp.framework.http.annotations.request.ResponseStatus;
 import simplehttp.framework.http.annotations.request.mapping.Do;
 import simplehttp.framework.http.enums.HttpStatus;
-import simplehttp.framework.http.enums.MediaType;
+import simplehttp.framework.http.extract.ExtractValue;
+import simplehttp.framework.http.extract.HeaderValueExtract;
+import simplehttp.framework.http.extract.PathVariableValueExtract;
+import simplehttp.framework.http.extract.PayloadValueExtract;
+import simplehttp.framework.http.message.DefaultJsonOutputMessage;
 import simplehttp.framework.http.message.HttpOutputMessage;
-
-
 
 public class HttpRequestControllerResolver {
 	private PathMatcher pathMatcher;
 	private HttpRequest httpRequest;
 	
 	private List<Object> controllers = new ArrayList<>();
+	
+	private List<ExtractValue> extractions = List.of(
+			new PayloadValueExtract(),
+			new PathVariableValueExtract(),
+			new HeaderValueExtract()
+			);
 	
 	public HttpRequestControllerResolver(HttpRequest httpRequest,List<Object> controllers) {
 		this.httpRequest = httpRequest;
@@ -43,42 +46,30 @@ public class HttpRequestControllerResolver {
 		
 		List<Object> args = new ArrayList<>();
 		for (Parameter parameter : instanceAndMethod.getMethod().getParameters()) {
-			if(parameter.isAnnotationPresent(Payload.class)) {
-			    String json = new String(this.httpRequest.getMessageBody());
-			    Object instance=   new GsonBuilder().create().fromJson(json, parameter.getType());
-			    args.add(instance);
-			}else if(parameter.isAnnotationPresent(PathVariable.class)) {
-				PathVariable pathVariable =  parameter.getAnnotation(PathVariable.class);
-				String name = pathVariable.name();
-				args.add(pathVariables.get(name));
-			}else {
-				args.add(null);
-			}
+			Object argValue = getArgValue(pathVariables, parameter);
+			args.add(argValue);
 		}
-	
+		
+		HttpStatus status = null;
+		if(instanceAndMethod.getMethod().isAnnotationPresent(ResponseStatus.class)) {
+			 status =  instanceAndMethod.getMethod().getAnnotation(ResponseStatus.class).status();
+		}
+		
 		Object returned = instanceAndMethod.invoke(args.toArray());
-		return new HttpOutputMessage() {
-			
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.OK;
-			}
-			
-			@Override
-			public HttpHeaders getHeaders() {
-				HttpHeaders h = new HttpHeaders();
-				h.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-				return h;
-			}
-			
-			@Override
-			public InputStream fromStream() {
-				String json = new GsonBuilder().create().toJson(returned);
-				return new ByteArrayInputStream(json.getBytes());
-			}
-		};
+		return new DefaultJsonOutputMessage(status, new HttpHeaders(), returned);
 	}
 
+	private Object getArgValue(Map<String, Object> pathVariables,Parameter parameter) throws Exception {
+		
+		for (ExtractValue extract : extractions) {
+			if(parameter.isAnnotationPresent(extract.getAnnotation())) {
+				if(!extract.notPermited().contains(httpRequest.getHeader().contentType().getMediaType())) {
+					return extract.getArgValue(httpRequest, parameter,pathVariables);
+				}
+			}
+		}
+		return null;
+	}
 	
 
 	private ObjectAndMethod lookForMethodMatch(Map<String, Object> pathVariables) throws Exception {

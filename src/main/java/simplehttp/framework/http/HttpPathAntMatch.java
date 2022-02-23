@@ -9,7 +9,8 @@ public class HttpPathAntMatch implements PathMatcher {
 	
 	private final static String OPEN_PATH_VARIABLE = "{";
 	private final static String CLOSE_PATH_VARIABLE = "}";
-	private final static String QUERY_PARAMETER_SEPARATOR = "?";
+	private final static String QUERY_PARAMETER_DELIMITER= "?";
+	private final static String QUERY_PARAMETER_SEPARATOR = "&";
 	 
 	private final static String PATH_VARIABLE_REGEX = "\\{[^/]+?\\}";
 
@@ -29,6 +30,9 @@ public class HttpPathAntMatch implements PathMatcher {
 	 * */
 	@Override
 	public boolean match(String pattern, String path, Map<String, Object> pathVariables) {
+		
+		int indexOfQueryDelimiter = path.indexOf(QUERY_PARAMETER_DELIMITER);
+		path = indexOfQueryDelimiter > 0  ? path.substring(0,indexOfQueryDelimiter) : path;
 		
 		String piecesPattern[] = splitBySeparator(pattern);
 		String piecesPath[] = splitBySeparator(path);

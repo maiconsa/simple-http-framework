@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.List;
 
 import simplehttp.framework.http.filter.FilterChain;
-import simplehttp.framework.http.message.DefaultExceptionOuputMessage;
+import simplehttp.framework.http.message.DefaultJsonExceptionOuputMessage;
 import simplehttp.framework.http.message.HttpOutputMessage;
 
 public class IncomingRequest implements Runnable {
@@ -38,7 +38,7 @@ public class IncomingRequest implements Runnable {
 			httpResponse.send(output);
 		} catch (Exception e) {
 			try {
-				HttpOutputMessage outputMessage = new DefaultExceptionOuputMessage(e).getOutputMessage();
+				HttpOutputMessage outputMessage = new DefaultJsonExceptionOuputMessage(e);
 				httpResponse.send(outputMessage);
 			} catch (Exception e2) {
 				e2.printStackTrace();
