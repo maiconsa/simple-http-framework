@@ -1,8 +1,11 @@
 package simplehttp.framework.context;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import simplehttp.framework.http.Server;
@@ -17,9 +20,12 @@ public class ApplicationContext {
 	
 	private List<Object> controllers;
 	
+	private Properties properties;
+	
 	public ApplicationContext(String ...basePackages) throws Exception{
 		appFilter = new ApplicationFilterChain(List.of(new CheckAllowedMediaTypeFilter()));
-		Server server = new Server(9999);
+		this.properties = loadProperties();
+		Server server = new Server(Integer.parseInt( (String)properties.getOrDefault("app.port", "8080")));
 		server.setApplicationContext(this);
 		loadClass(basePackages);
 	 	new Thread( server).run();
@@ -52,6 +58,13 @@ public class ApplicationContext {
 	     controllers = Collections.unmodifiableList(tempControllersInstance);
 
 		
+	}
+	
+	private Properties loadProperties() throws IOException {
+		Properties properties = new Properties();
+		InputStream is = 	getClass().getResourceAsStream("/application.properties");
+		properties.load(is);
+		return properties;
 	}
 	
 	
