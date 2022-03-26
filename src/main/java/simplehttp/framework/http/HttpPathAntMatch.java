@@ -10,7 +10,6 @@ public class HttpPathAntMatch implements PathMatcher {
 	private final static String OPEN_PATH_VARIABLE = "{";
 	private final static String CLOSE_PATH_VARIABLE = "}";
 	private final static String QUERY_PARAMETER_DELIMITER= "?";
-	private final static String QUERY_PARAMETER_SEPARATOR = "&";
 	 
 	private final static String PATH_VARIABLE_REGEX = "\\{[^/]+?\\}";
 
@@ -46,15 +45,14 @@ public class HttpPathAntMatch implements PathMatcher {
 					continue;
 				}
 				if(!Pattern.matches(piecesPattern[i], piecesPath[i])) {
+					pathVariables.clear();
 					return false;
 				}
 			}			
 
 		return true;
 	}
-	
-	
-	
+		
 	private String[] splitBySeparator(String path) {
 		return path.split(DEFAULT_PATH_SEPARATOR);
 	};

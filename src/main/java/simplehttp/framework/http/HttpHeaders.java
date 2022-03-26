@@ -13,13 +13,11 @@ public class HttpHeaders  extends HashMap<String, Object>{
 	public static final String CONTENT_TYPE = "Content-Type";
 	public static final String CONTENT_LEGNTH = "Content-Length";
 	public static final String CONTENT_DISPOSITION="Content-Disposition"; 
-	
+	public static final String ACCEPT= "Accept";
 	public HttpHeaders() {
 		
 	}
-	
-	
-	
+
 	public ContentTypeDirective contentType() {
 		if(!containsKey(CONTENT_TYPE)) return null;
 			String contentType  = get(CONTENT_TYPE).toString();
@@ -71,6 +69,39 @@ public class HttpHeaders  extends HashMap<String, Object>{
 		if(!containsKey(CONTENT_LEGNTH)) return 0L;
 		return Long.parseLong(get(CONTENT_LEGNTH).toString());
 	}
+	
+	public String getAccept() {
+		return this.get(ACCEPT).toString();
+	}
+	
+	
+	public static HttpHeadersBuilder builder() {
+		return new HttpHeadersBuilder();
+	}
+		
+	public static class HttpHeadersBuilder {
+		
+		private HttpHeaders headers;
+			
+		public HttpHeadersBuilder() {
+			this.headers  = new HttpHeaders();
+		}
+	
+		public HttpHeadersBuilder accept(String accept) {
+			this.headers.put(ACCEPT, accept);
+			return this;
+		}
+		
+		public HttpHeadersBuilder contentType(String contentType) {
+			this.headers.put(CONTENT_TYPE, contentType);
+			return this;
+		}
+		
+		public HttpHeaders build() {
+			return this.headers;
+		}
+	}
+	
 	
 	
 }

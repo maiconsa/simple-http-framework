@@ -1,6 +1,5 @@
 package simplehttp.framework.http;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -14,12 +13,16 @@ import simplehttp.framework.http.annotations.request.Controller;
 import simplehttp.framework.http.annotations.request.ResponseStatus;
 import simplehttp.framework.http.annotations.request.mapping.Do;
 import simplehttp.framework.http.enums.HttpStatus;
+import simplehttp.framework.http.enums.MediaType;
 import simplehttp.framework.http.extract.ExtractValue;
 import simplehttp.framework.http.extract.HeaderValueExtract;
 import simplehttp.framework.http.extract.PathVariableValueExtract;
 import simplehttp.framework.http.extract.PayloadValueExtract;
+import simplehttp.framework.http.extract.QueryParameterValueExtract;
 import simplehttp.framework.http.message.DefaultJsonOutputMessage;
 import simplehttp.framework.http.message.HttpOutputMessage;
+import simplehttp.framework.http.message.ResponseEntityOutputMessage;
+import simplehttp.framework.http.utils.HttpUtils;
 
 public class HttpRequestControllerResolver {
 	private PathMatcher pathMatcher;
@@ -30,7 +33,8 @@ public class HttpRequestControllerResolver {
 	private List<ExtractValue> extractions = List.of(
 			new PayloadValueExtract(),
 			new PathVariableValueExtract(),
-			new HeaderValueExtract()
+			new HeaderValueExtract(),
+			new QueryParameterValueExtract()
 			);
 	
 	public HttpRequestControllerResolver(HttpRequest httpRequest,List<Object> controllers) {
@@ -42,29 +46,30 @@ public class HttpRequestControllerResolver {
 	
 	public HttpOutputMessage resolve() throws Exception {
 		Map<String, Object> pathVariables = new HashMap<>();
+
 		ObjectAndMethod instanceAndMethod = lookForMethodMatch(pathVariables);
-		
+		Map<String,String> queryParameters   = HttpUtils.getQueryMap(this.httpRequest.getPath());
 		List<Object> args = new ArrayList<>();
 		for (Parameter parameter : instanceAndMethod.getMethod().getParameters()) {
-			Object argValue = getArgValue(pathVariables, parameter);
+			Object argValue = getArgValue(pathVariables,queryParameters, parameter);
 			args.add(argValue);
 		}
-		
-		HttpStatus status = null;
-		if(instanceAndMethod.getMethod().isAnnotationPresent(ResponseStatus.class)) {
-			 status =  instanceAndMethod.getMethod().getAnnotation(ResponseStatus.class).status();
-		}
-		
+			
 		Object returned = instanceAndMethod.invoke(args.toArray());
-		return new DefaultJsonOutputMessage(status, new HttpHeaders(), returned);
+		if (returned instanceof ResponseEntity) {
+			return new ResponseEntityOutputMessage<>((ResponseEntity<?>)returned);
+		} else {
+			if(!instanceAndMethod.getMethod().isAnnotationPresent(ResponseStatus.class)) throw  new Exception("Invalid HttpStatus");
+			HttpStatus	status = instanceAndMethod.getMethod().getAnnotation(ResponseStatus.class).status();
+			return new DefaultJsonOutputMessage(status, new HttpHeaders(), returned);
+		}
 	}
 
-	private Object getArgValue(Map<String, Object> pathVariables,Parameter parameter) throws Exception {
-		
+	private Object getArgValue(Map<String, Object> pathVariables, Map<String, String> queryParameters,Parameter parameter) throws Exception {
 		for (ExtractValue extract : extractions) {
 			if(parameter.isAnnotationPresent(extract.getAnnotation())) {
 				if(!extract.notPermited().contains(httpRequest.getHeader().contentType().getMediaType())) {
-					return extract.getArgValue(httpRequest, parameter,pathVariables);
+					return extract.getArgValue(httpRequest, parameter,pathVariables,queryParameters);
 				}
 			}
 		}
@@ -88,12 +93,18 @@ public class HttpRequestControllerResolver {
 						boolean match  = pathMatcher.match(fullPath, httpRequest.getPath(), pathVariables);
 						boolean contentTypeOk = false;
 						try {
-							contentTypeOk = supposedRequest.contentType().equals(this.httpRequest.getHeader().contentType().getMediaType());
+							
+							if(this.httpRequest.getHeader().contentType() == null) {
+								String accept = this.httpRequest.getHeader().getAccept();
+								contentTypeOk = accept != null && accept.contains(MediaType.TEXT_HTML.getValue()) ;
+							}else {
+								contentTypeOk = supposedRequest.contentType().equals(this.httpRequest.getHeader().contentType().getMediaType());
+							}
 						} catch (Exception e) {
 							return false;
 						}
 								
-						return methodAreEquals &&  match && contentTypeOk;
+ 						return methodAreEquals &&  match && contentTypeOk;
 					}).findFirst();
 			
 			if(!method.isPresent()) {
@@ -125,7 +136,7 @@ public class HttpRequestControllerResolver {
 		}
 		
 		
-		public Object invoke(Object ...args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		public Object invoke(Object ...args) throws Exception {
 			method.setAccessible(true);
 			return this.method.invoke(instance, args);
 		}

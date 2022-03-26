@@ -55,7 +55,6 @@ public class MultipartHttpRequest {
 			    	    	pos++;
 			    	    	bodyPartLenght++;
 				    	     bodyPartEnd = Arrays.equals(Arrays.copyOfRange(messageBody, pos , pos + HttpConstants.BOUNDARY_DELIMITER.length), HttpConstants.BOUNDARY_DELIMITER);
-
 			    	    }
 			    	    this.parts.add(buildPartFrom(Arrays.copyOfRange(messageBody, startPosition - 1, startPosition +bodyPartLenght )));
 			     }

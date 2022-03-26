@@ -7,16 +7,19 @@ import java.util.List;
 import java.util.Map;
 
 import simplehttp.framework.http.HttpRequest;
-import simplehttp.framework.http.annotations.request.Header;
+import simplehttp.framework.http.annotations.request.QueryParameter;
 import simplehttp.framework.http.enums.MediaType;
 
-public class HeaderValueExtract implements ExtractValue {
+public class QueryParameterValueExtract implements ExtractValue {
 
 	@Override
 	public Object getArgValue(HttpRequest request,Parameter parameter,Object ...others) throws Exception {
-		Map<String, Object> headers = request.getHeader();
-		Header header =  parameter.getAnnotation(Header.class);
-		String name = header.name();
+		if(others == null || others.length == 0  || !(others[1] instanceof Map)) {
+			throw new Exception("The second object on others array must be a instance of Map class");
+		}
+		Map<String, Object> headers = (Map<String,Object>) others[1];
+		QueryParameter queryParameter =  parameter.getAnnotation(QueryParameter.class);
+		String name = queryParameter.name();
 		return headers.get(name);
 	}
 
@@ -27,7 +30,7 @@ public class HeaderValueExtract implements ExtractValue {
 
 	@Override
 	public Class<? extends Annotation> getAnnotation() {
-		return Header.class;
+		return QueryParameter.class;
 	}
 	
 }

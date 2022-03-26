@@ -20,7 +20,7 @@ public class PayloadValueExtract implements ExtractValue {
 
 	@Override
 	public List<MediaType> notPermited() {
-		return List.of(MediaType.APPLICATION_JSON);
+		return List.of(MediaType.MULTIPART_DATA);
 	}
 
 	@Override

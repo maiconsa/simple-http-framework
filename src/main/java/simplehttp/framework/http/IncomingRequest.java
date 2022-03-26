@@ -25,14 +25,11 @@ public class IncomingRequest implements Runnable {
 		this.controllers = controllers;
 	}
 
-
 	public void run() {
 		try {
 			httpRequest = new HttpRequest(new BufferedInputStream(socket.getInputStream()));
 			httpResponse = new HttpResponse(socket.getOutputStream());
-			
 			filter.apply(httpRequest);
-	
 			HttpRequestControllerResolver requestResolver = new HttpRequestControllerResolver(httpRequest,this.controllers);	
 			HttpOutputMessage output =  requestResolver.resolve();
 			httpResponse.send(output);
@@ -43,11 +40,9 @@ public class IncomingRequest implements Runnable {
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}
-
 		} finally {
 			closeSocketConnection();
 		}
-
 	}
 
 	private void closeSocketConnection() {
