@@ -38,6 +38,7 @@ Defina os endpoints dos controladores utilizandos as seguinte anotações:
 	
 ## IMPORTANTE
 Apenas conteúdo do tipos json são aceitos como entrada e saídas das requisições;	
+Isto apenas content-type  com valor application/json será aceito;
 
 # Reference
 
