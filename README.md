@@ -17,7 +17,6 @@ O pacote deste mini framework não está publicado em nenhum repositório, para 
 Após a execução deste comando no repositório maven local .m2 terá um artefato: 
 
 	 repository/simplehttp/framework/web/1.0.0/web-1.0.0.jar
-
 	 
 # Como utilizar?
 
@@ -37,6 +36,8 @@ Defina os endpoints dos controladores utilizandos as seguinte anotações:
 | @Header         | Identifica um campo header http que está na requisição                      |
 | @ResponseStatus | Identifica o status code  http que será retornada ao completar a requisição | 
 	
+Exemplo : https://github.com/maiconsa/example-simplehttp-app
+
 ## IMPORTANTE
 Apenas conteúdo do tipos json são aceitos como entrada e saídas das requisições;	
 Isto apenas content-type  com valor application/json será aceito;
