@@ -11,8 +11,9 @@ Um framework simples para tratar  requisições HTTP 1.1 seguindo os padrões  w
 
 # Como roda?
 O pacote deste mini framework não está publicado em nenhum repositório, para realizar os teste é necessário executar localmente utilizando o comando:
-
-	 maven install
+```bash
+	 mvn install
+```
 Após a execução deste comando no repositório maven local .m2 terá um artefato: 
 
 	 repository/simplehttp/framework/web/1.0.0/web-1.0.0.jar
