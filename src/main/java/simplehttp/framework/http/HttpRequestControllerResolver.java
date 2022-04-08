@@ -88,7 +88,7 @@ public class HttpRequestControllerResolver {
 					.filter(item -> item.isAnnotationPresent(Do.class))
 					.filter(item -> {
 						Do supposedRequest = item.getAnnotation(Do.class);
-						boolean methodAreEquals = supposedRequest.method().equals(supposedRequest.method());
+						boolean methodAreEquals = supposedRequest.method().equals(this.httpRequest.getMethod());
 						String fullPath = pathMatcher.combine(controlerPath, supposedRequest.path());
 						boolean match  = pathMatcher.match(fullPath, httpRequest.getPath(), pathVariables);
 						boolean contentTypeOk = false;

@@ -31,7 +31,11 @@ public class Server implements Runnable {
 
 			try {
 				Socket socket = serverSocket.accept();
-				if(socket == null) continue;
+				
+				if(!socket.isConnected() || socket == null || socket.getInputStream() == null || socket.getOutputStream() == null ) {
+					socket.close();
+					continue;
+				};
 				IncomingRequest request = new IncomingRequest(socket,applicationContext.getFilterChain(),applicationContext.getController());
 				Future<?> futureIncomingRequest = pollRequest.submit(request);
 				incomingRequests.add(futureIncomingRequest);

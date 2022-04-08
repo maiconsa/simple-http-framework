@@ -1,6 +1,7 @@
 package simplehttp.framework.http;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
@@ -26,6 +27,7 @@ public class IncomingRequest implements Runnable {
 	}
 
 	public void run() {
+		
 		try {
 			httpRequest = new HttpRequest(new BufferedInputStream(socket.getInputStream()));
 			httpResponse = new HttpResponse(socket.getOutputStream());
@@ -33,7 +35,10 @@ public class IncomingRequest implements Runnable {
 			HttpRequestControllerResolver requestResolver = new HttpRequestControllerResolver(httpRequest,this.controllers);	
 			HttpOutputMessage output =  requestResolver.resolve();
 			httpResponse.send(output);
-		} catch (Exception e) {
+		}catch (EOFException e) {
+			e.printStackTrace();
+		}
+		 catch (Exception e) {
 			try {
 				HttpOutputMessage outputMessage = new DefaultJsonExceptionOuputMessage(e);
 				httpResponse.send(outputMessage);
@@ -43,7 +48,7 @@ public class IncomingRequest implements Runnable {
 		} finally {
 			closeSocketConnection();
 		}
-	}
+ 	}
 
 	private void closeSocketConnection() {
 		try {

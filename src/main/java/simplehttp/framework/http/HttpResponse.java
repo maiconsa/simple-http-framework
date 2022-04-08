@@ -27,11 +27,11 @@ public  class HttpResponse {
 	
 	public void send(HttpOutputMessage message) throws Exception {
 		
-		this.status = message.status();
+ 		this.status = message.status();
 		this.headers = message.getHeaders();
 		this.outputStream.write(startLine());
 		this.outputStream.write(getByteHeaders());
-		this.outputStream.write(LF);
+		this.outputStream.write(CRLF);
 		message.fromStream().transferTo(this.outputStream);
 		this.outputStream.write(CRLF);
 		this.outputStream.close();
@@ -44,6 +44,7 @@ public  class HttpResponse {
 		builder.append(HTTP_VERSION_1_1);
 		builder.append(SP);
 		builder.append(status.status());
+		builder.append(SP);
 		builder.append(reasonPhase);
 		builder.append(CRLF);
 		
@@ -62,7 +63,7 @@ public  class HttpResponse {
 			builder.append(entry.getValue());
 			builder.append("\r\n");
 		});
-		
+
 		return builder.toString().getBytes();
 	}
 
