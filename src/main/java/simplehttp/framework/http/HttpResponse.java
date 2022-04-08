@@ -2,8 +2,8 @@ package simplehttp.framework.http;
 
 import static simplehttp.framework.http.HttpConstants.CRLF;
 import static simplehttp.framework.http.HttpConstants.HTTP_VERSION_1_1;
-import static simplehttp.framework.http.HttpConstants.LF;
 import static simplehttp.framework.http.HttpConstants.SP;
+import static simplehttp.framework.http.HttpConstants.CRLF_STR;
 
 import java.io.OutputStream;
 
@@ -17,9 +17,7 @@ public  class HttpResponse {
 	private HttpHeaders headers;
 	
 	private HttpStatus status;
-	
-	private String reasonPhase = "";
-	
+		
 	public HttpResponse(OutputStream outputStream) {
 		this.outputStream = outputStream;
 	}
@@ -45,9 +43,8 @@ public  class HttpResponse {
 		builder.append(SP);
 		builder.append(status.status());
 		builder.append(SP);
-		builder.append(reasonPhase);
-		builder.append(CRLF);
-		
+		builder.append(status.getReasonPhase());
+		builder.append(CRLF_STR);
 		return builder.toString().getBytes();
 		
 	}
@@ -59,9 +56,10 @@ public  class HttpResponse {
 		
 		StringBuilder builder = new StringBuilder();
 		this.headers.entrySet().forEach((entry) -> {
-			builder.append(entry.getKey());
-			builder.append(entry.getValue());
-			builder.append("\r\n");
+			builder.append(entry.getKey().trim());
+			builder.append(":");
+			builder.append(String.valueOf(entry.getValue()).trim());
+			builder.append(CRLF_STR);
 		});
 
 		return builder.toString().getBytes();

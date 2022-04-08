@@ -27,11 +27,11 @@ public class DefaultJsonOutputMessage implements HttpOutputMessage {
 		if (this.headers == null) {
 			this.headers = new HttpHeaders();
 			HttpHeaders h = new HttpHeaders();
-			h.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+			h.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.getValue());
 		}
 
 		if (!this.headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
-			this.headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+			this.headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.getValue());
 		}
 	}
 
